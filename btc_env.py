@@ -184,10 +184,6 @@ class BitcoinEnv(Environment):
         # Note: don't scale/normalize here, since we'll normalize w/ self.price/step_acc.cash after each action
         return states, prices
 
-    def _reshape_window_for_conv2d(self, window):
-        return np.expand_dims(window, axis=1)
-        # see https://goo.gl/ghTGiU for 3d arbitrage
-
     def use_dataset(self, mode, no_kill=False):
         """Make sure to call this before reset()!"""
         before_time = time.time()
@@ -233,7 +229,6 @@ class BitcoinEnv(Environment):
             first_state = self.scaler.transform_state(first_state)
         if self.conv2d:
             window = self.observations[start_timestep - self.hypers.step_window:start_timestep]
-            first_state = self._reshape_window_for_conv2d(window)
         return dict(series=first_state, stationary=[1., 1., 0.])
 
     def execute(self, actions):
@@ -300,7 +295,6 @@ class BitcoinEnv(Environment):
             reward = self.scaler.transform_reward(reward)
         if self.conv2d:
             window = self.observations[step_acc.i - self.hypers.step_window:step_acc.i]
-            next_state = self._reshape_window_for_conv2d(window)
         next_state = dict(series=next_state, stationary=[cash_scaled, val_scaled, repeats_scaled])
 
         terminal = int(step_acc.i + 1 >= len(self.observations))

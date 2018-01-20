@@ -119,6 +119,11 @@ def custom_net(hypers, print_net=False, baseline=False):
             stationary = x['stationary']
             x = series
 
+            # For the first conv layer, we reshape it from 2d (time x features) to 3d (time x 1 x features), such that
+            # features is "depth" or "channels"
+            if isinstance(self.layers[0], TForceLayers.Conv2d):
+                x = tf.expand_dims(x, axis=1)
+
             # Apply stationary to the first Dense after the last LSTM. in the case of Baseline, there's no LSTM,
             # so apply it to the start
             apply_stationary_here = 0
